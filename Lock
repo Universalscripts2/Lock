@@ -1,0 +1,42 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local Camera = workspace.CurrentCamera
+
+local UserInputService = game:GetService("UserInputService")
+local Touch = UserInputService.TouchEnabled
+local MobilePredictionAmount = 0.2
+local MobileSmoothness = 5
+
+local function get_nearest_player()
+local players = Players:GetPlayers()
+local nearest_player = nil
+local nearest_distance = math.huge
+for _, player in pairs(players) do
+if player ~= LocalPlayer then
+local distance = (player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).magnitude
+if distance < nearest_distance then
+nearest_distance = distance
+nearest_player = player
+end
+end
+end
+return nearest_player
+end
+
+local function airshot_local()
+local target = get_nearest_player()
+local distance = (target.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).magnitude
+if distance < 10 then
+if Touch then
+local velocity = Humanoid.Velocity
+local mobile_prediction = velocity * MobilePredictionAmount
+Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.p + mobile_prediction), MobileSmoothness)
+else
+Camera.CFrame = CFrame.new(Camera.CFrame.p, target.Character.HumanoidRootPart.Position)
+end
+end
+end
+
+game:GetService("RunService").Heartbeat:Connect(airshot_local)
